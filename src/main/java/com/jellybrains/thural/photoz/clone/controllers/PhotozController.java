@@ -1,20 +1,23 @@
 package com.jellybrains.thural.photoz.clone.controllers;
 
 import com.jellybrains.thural.photoz.clone.models.Photo;
+import com.jellybrains.thural.photoz.clone.services.PhotozService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
 public class PhotozController {
-    Map <String, Photo> db = new HashMap<>(){{
-        put("1", new Photo("1", "hello.jpg"));
-    }};
+    private final PhotozService photozService;
+
+    public PhotozController(PhotozService photozService){
+        this.photozService = photozService;
+    }
 
     @GetMapping("/")
     public String hello(){
@@ -23,26 +26,25 @@ public class PhotozController {
 
     @GetMapping("/photoz")
     Collection<Photo> get(){
-        return db.values();
+        return photozService.get();
     }
 
     @GetMapping("/photoz/{id}")
     Photo get(@PathVariable String id){
-        Photo photo = db.get(id);
+        Photo photo = photozService.get(id);
         if(photo == null) throw  new ResponseStatusException(HttpStatus.NOT_FOUND);
         return photo;
     }
 
     @DeleteMapping("/photoz/{id}")
     Photo delete(@PathVariable String id){
-        Photo photo = db.remove(id);
+        Photo photo = photozService.remove(id);
         if(photo == null) throw  new ResponseStatusException(HttpStatus.NOT_FOUND);
         return photo;
     }
     @PostMapping("/photoz")
-    Photo create(@RequestBody Photo photo){
-        photo.setId(UUID.randomUUID().toString());
-        db.put(photo.getId(), photo);
+    Photo create(@RequestPart("data") MultipartFile file) throws IOException {
+        Photo photo = photozService.save(file.getOriginalFilename(), file.getContentType(), file.getBytes());
         return photo;
     }
 }
