@@ -8,8 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.UUID;
 
 @RestController
 public class PhotozController {
@@ -25,26 +23,23 @@ public class PhotozController {
     }
 
     @GetMapping("/photoz")
-    Collection<Photo> get(){
+    Iterable<Photo> get(){
         return photozService.get();
     }
 
     @GetMapping("/photoz/{id}")
-    Photo get(@PathVariable String id){
+    Photo get(@PathVariable Integer id){
         Photo photo = photozService.get(id);
         if(photo == null) throw  new ResponseStatusException(HttpStatus.NOT_FOUND);
         return photo;
     }
 
     @DeleteMapping("/photoz/{id}")
-    Photo delete(@PathVariable String id){
-        Photo photo = photozService.remove(id);
-        if(photo == null) throw  new ResponseStatusException(HttpStatus.NOT_FOUND);
-        return photo;
+    void delete(@PathVariable Integer id){
+        photozService.remove(id);
     }
     @PostMapping("/photoz")
     Photo create(@RequestPart("data") MultipartFile file) throws IOException {
-        Photo photo = photozService.save(file.getOriginalFilename(), file.getContentType(), file.getBytes());
-        return photo;
+        return photozService.save(file.getOriginalFilename(), file.getContentType(), file.getBytes());
     }
 }
